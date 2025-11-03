@@ -1,6 +1,6 @@
-# HomeAppliance-Agent
+# Home-Appliance-Agent
 
-The main goal is to create a functional web application, "HomeAppliance-Agent," that acts as a central "smart" manual for all of a user's home appliances. A user can upload PDF manuals for their TV, oven, microwave, coffee machine, etc., and give each one a name. They can then have a single conversation with an AI assistant. When the user asks, "How do I set the timer on my oven?" or "How to mute my TV," the application will load the correct manual, and find the answer based only on the content of that specific document.
+The main goal is to create a functional web application, "Home-Appliance-Agent," that acts as a central "smart" manual for all of a user's home appliances. A user can upload PDF manuals for their TV, oven, microwave, coffee machine, etc., and give each one a name. They can then have a single conversation with an AI assistant. When the user asks, "How do I set the timer on my oven?" or "How to mute my TV," the application will load the correct manual, and find the answer based only on the content of that specific document.
 ### MVP
 **Core Technologies**
 
