@@ -1,3 +1,5 @@
 .venv
 .env
-sample.pdf
+*.pdf
+*.faiss
+*.pkl
