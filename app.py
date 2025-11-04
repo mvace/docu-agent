@@ -2,8 +2,10 @@ import streamlit as st
 import random
 import time
 from pathlib import Path
+import json
 
 from vector_builder import create_vector_store
+from db_handler import add_appliance, get_appliance_list
 
 UPLOAD_DIRECTORY = Path("uploaded_pdfs")
 
@@ -42,9 +44,9 @@ with st.sidebar:
                     with open(file_path, "wb") as f:
                         f.write(uploaded_file.getbuffer())
                     create_vector_store(pdf=file_path, name=appliance_name)
+                    add_appliance(appliance_name, appliance_name)
                     st.success(f"Successfully added guide for {appliance_name}!")
-                # create FAISS index
-                # append to json
+
                 except Exception as e:
                     st.error(f"Error saving file: {e}")
             else:
@@ -55,15 +57,15 @@ with st.sidebar:
 st.title("Home Appliance Agent")
 
 # Dropdown Box
+options = get_appliance_list()
 dropdown_option = st.selectbox(
     "Choose an option:",
-    ("Option 1", "Option 2", "Option 3", "More Options..."),
+    options,
     index=0,
 )
 
-# Fetch the name of the appliances from the json
 
-st.write("You selected:", dropdown_option)
+# st.write("You selected:", dropdown_option)
 
 
 st.divider()

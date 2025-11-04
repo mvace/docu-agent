@@ -1,5 +1,6 @@
 {
-    "Whirlpool Microwave" : "faiss_index_Whirlpool Microwave"
+    "Whirlpool Microwave": "faiss_index_Whirlpool Microwave",
+    "Samsung Refrigerator": "faiss_index_Samsung_Refrigerator",
+    "Bosch Dishwasher": "faiss_index_Bosch_Dishwasher",
+    "IT guide": "IT guide"
 }
-
-{"Bosch Vacuum": "faiss_index/Bosch Vacuum"}
