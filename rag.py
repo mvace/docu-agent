@@ -1,48 +1,32 @@
-from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 import os
+import streamlit as st
 from dotenv import load_dotenv
+from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import ChatPromptTemplate
 
+PROMPT_TEMPLATE = """
+You are a helpful assistant for answering questions about user manuals.
+Answer the user's question based *only* on the following context.
+If the answer is not found in the context, simply say "I don't have that information in the manual."
+Do not make up answers.
 
-load_dotenv()
+Context:
+{context}
 
-
-def get_rag_answer(query_text, retriever, llm, prompt):
-    # Combine Everything into a RAG Chain
-    # 1. Retrieve: Get relevant documents from the vector store
-    docs = retriever.invoke(query_text)
-
-    # 2. Format Context: Combine the documents into a single string
-    context = "\n\n".join(doc.page_content for doc in docs)
-
-    # 3. Create Prompt Input: Prepare the dictionary for the prompt
-    prompt_input = {"context": context, "question": query_text}
-
-    # 4. Format Prompt: Fill in the template with context and question
-    formatted_prompt = prompt.invoke(prompt_input)
-
-    # 5. Call LLM: Send the formatted prompt to the language model
-    response_message = llm.invoke(formatted_prompt)
-
-    # 6. Parse Output: Get the plain text content from the response
-    answer = response_message.content
-
-    return answer
+Question:
+{question}
+"""
 
 
-def main():
-    # Load tools
-    # Embedder
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
+@st.cache_resource
+def get_embeddings_model():
+    return GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
 
-    # Load vector_store
-    vector_store = FAISS.load_local(
-        "faiss_index", embeddings, allow_dangerous_deserialization=True
-    )
 
-    # LLM
-    llm = ChatGoogleGenerativeAI(
+@st.cache_resource
+def get_llm():
+    return ChatGoogleGenerativeAI(
         model="gemini-2.5-flash-lite",
         temperature=0,
         max_tokens=None,
@@ -50,38 +34,34 @@ def main():
         max_retries=2,
     )
 
-    # Create the retriever
-    retriever = vector_store.as_retriever()
 
-    # Build the prompt
-    # Create a template for the prompt you will send to the LLM.
-
-    template = """
-    You are a helpful assistant for answering questions about user manuals.
-    Answer the user's question based *only* on the following context.
-    If the answer is not found in the context, simply say "I don't have that information in the manual."
-    Do not make up answers.
-
-    Context:
-    {context}
-
-    Question:
-    {question}
-    """
-
-    prompt = ChatPromptTemplate.from_template(template)
-
-    # CLI
-    while True:
-        query = input("How can I help you? (Type 'exit' to quit) ")
-        if query.lower() == "exit":
-            break
-        try:
-            answer = get_rag_answer(query, retriever, llm, prompt)
-            print("\nAnswer:\n", answer)
-        except Exception as e:
-            print(f"\nAn error occured {e}:")
+@st.cache_resource
+def get_prompt_template():
+    return ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
 
 
-if __name__ == "__main__":
-    main()
+@st.cache_resource
+def get_retriever(appliance_name):
+    embeddings = get_embeddings_model()
+
+    vector_store = FAISS.load_local(
+        f"faiss_index/{appliance_name}",
+        embeddings,
+        allow_dangerous_deserialization=True,
+    )
+    return vector_store.as_retriever()
+
+
+def get_rag_answer(user_query, appliance_name):
+    llm = get_llm()
+    prompt = get_prompt_template()
+    retriever = get_retriever(appliance_name)
+
+    docs = retriever.invoke(user_query)
+    context = "\n\n".join(doc.page_content for doc in docs)
+    prompt_input = {"context": context, "question": user_query}
+    formatted_prompt = prompt.invoke(prompt_input)
+    response_message = llm.invoke(formatted_prompt)
+    answer = response_message.content
+
+    return answer

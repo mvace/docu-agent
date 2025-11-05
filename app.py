@@ -6,6 +6,7 @@ import json
 
 from vector_builder import create_vector_store
 from db_handler import add_appliance, get_appliance_list
+from rag import get_rag_answer
 
 UPLOAD_DIRECTORY = Path("uploaded_pdfs")
 
@@ -65,14 +66,13 @@ dropdown_option = st.selectbox(
 )
 
 
-# st.write("You selected:", dropdown_option)
+st.write("You selected:", dropdown_option)
 
 
 st.divider()
 
 # --- Simple Chat Interface ---
-st.header("Simple Chat Bot")
-st.markdown("Ask a question, and the bot will give a random reply.")
+st.header("Home Appliance Chat Bot")
 
 # Initialize chat history in session state
 if "messages" not in st.session_state:
@@ -82,16 +82,6 @@ if "messages" not in st.session_state:
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-
-# List of random bot responses
-bot_responses = [
-    "That's an interesting question!",
-    "I'm not sure I understand, can you rephrase?",
-    "Let me think about that...",
-    "Why do you ask that?",
-    "Fascinating!",
-    "Could you tell me more?",
-]
 
 # Get user input
 prompt = st.chat_input("What is your question?")
@@ -107,7 +97,7 @@ if prompt:
         with st.spinner("Thinking..."):
             time.sleep(0.5)
 
-        response = random.choice(bot_responses)
+        response = get_rag_answer(prompt, dropdown_option)
         st.markdown(response)
 
     # Add bot response to chat history
