@@ -6,10 +6,12 @@ from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import ChatPromptTemplate
 
 PROMPT_TEMPLATE = """
-You are a helpful assistant for answering questions about user manuals.
-Answer the user's question based *only* on the following context.
-If the answer is not found in the context, simply say "I don't have that information in the manual."
-Do not make up answers.
+INSTRUCTIONS:
+1. Answer the user's question based on the provided context.
+2. If the user asks a general question, look for specific functions in the manual and describe those procedures.
+3. If the explicit answer is not found, simply say "I don't have that information in the manual."
+4. Answer in the same language as the user's question (Czech).
+
 
 Context:
 {context}
@@ -59,6 +61,8 @@ def get_rag_answer(user_query, appliance_name):
 
     docs = retriever.invoke(user_query)
     context = "\n\n".join(doc.page_content for doc in docs)
+    with st.expander("🔍 Debug: Zobrazit načtený kontext (Raw Context)"):
+        st.text(context)
     prompt_input = {"context": context, "question": user_query}
     formatted_prompt = prompt.invoke(prompt_input)
     response_message = llm.invoke(formatted_prompt)
